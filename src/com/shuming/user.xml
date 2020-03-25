@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="cat" class="com.shuming.Cat"></bean>
+    <bean id="user" class="com.shuming.User">
+        <property name="username" value="jsm"/>
+        <property name="student" ref="student"/>
+
+    </bean>
+    <bean id="student" class="com.shuming.Student" init-method="doInit" destroy-method="doClose">
+        <property name="id" value="217"/>
+        <property name="sname" value="jsm"/>
+    </bean>
+
+    <bean id="dog" class="com.shuming.Dog">
+        <constructor-arg name="name" value="xiaolu"/>
+        <constructor-arg name="user" ref="user"/>
+    </bean>
+
+    <!--  配置数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/testdb"/>
+        <property name="username" value="root"/>
+        <property name="password" value="435991368"/>
+        <property name="initialSize" value="4"/>
+    </bean>
+</beans>

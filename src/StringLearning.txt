@@ -1,0 +1,107 @@
+=================================================================================================
+IOC DI
+1. spring IOC加载流程
+          //1.加载配置文件为resource
+          Resource resource = new ClassPathResource("spring-config.xml");
+          //2.获取IOC容器对象,且容器会自动生成对象
+          BeanFactory beanFactory = new XmlBeanFactory(resource);
+          //3.根据ID获取你想要得到的对象
+          User user = (User) beanFactory.getBean("user");
+
+2. IOC的实现底层使用的是反射和内省机制（学习）
+3. spring从IOC容器中获取bean有三种方法来定位bean
+    1.通过getBean(id);得到的是object类型 需要强转为想要的类型（id必须唯一）
+    2.通过getBean(内.class);
+    3.结合1.2（推荐）getBeans(id,内.class);
+
+4.<import resource="子模块配置文件路径"/>拆分配置文件,在一个总的配置文件中引入其他的配置文件模块
+    通常一个包有一个相对应的.xml bean 配置文件
+    注意路径
+
+5. 通过ApplicationContext获取bean(推荐使用)
+       public static User getBeanFromApplicationContext(){
+           ApplicationContext applicationContext =
+                          new ClassPathXmlApplicationContext("spring-config.xml");
+           return (User)applicationContext.getBean("user",User.class);
+       }
+    ****ApplicationContext 在初始化容器的时候会立马加载改容器里面的所有Beans
+    ****但是BeanFactory初始化容器的时候不会立马加载Bean（延迟初始化）,只有当你调用getBean()方法时才去创建对象
+
+5.实例化常用的几种方法
+   1. 通过构造器实例化：
+         必须保证有一个无参数的构造器
+   2. 实现FactoryBean接口实例化
+
+6.Bean作用域 默认为单例
+
+7.<bean></bean> init 和 destory属性可以指定初始化方法和关闭方法
+      init-method 是在IOC容器创建对象后调用的方法
+      destory-method 是在bean销毁前调用的
+      <bean id="student" class="com.shuming.Student" init-method="doInit" destroy-method="doClose">
+
+8.关闭applicationContext
+        ((AbstractApplicationContext)applicationContext).close();
+        ((AbstractApplicationContext) applicationContext).registerShutdownHook();
+
+9.Bean的生命周期
+    简单来说:
+      创建容器->调用构造器创建对象，并注入值->调用初始化init-method方法->我们获取Bean并使用->调用的destory-method方法->销毁
+
+10 DI 依赖注入属性 注入值的类型：常量类型 value，引用类型（类）ref，集合类型<set> <list>
+    1.通过set方法注入 类必须要有set方法
+    <bean id="user" class="com.shuming.User">
+            <property name="username" value="jsm"/>
+            <property name="student" ref="student"/>ref 的值为要注入的bean的ID
+        </bean>
+        <bean id="student" class="com.shuming.Student" init-method="doInit" destroy-method="doClose">
+            <property name="id" value="217"/>
+            <property name="sname" value="jsm"/>
+        </bean>
+    2.通过构造器注入 给一个带参数的构造器
+        <bean id="dog" class="com.shuming.Dog">
+            <constructor-arg name="name" value="xiaolu"/>
+            <constructor-arg name="user" ref="user"/>
+        </bean>
+        内部bean 在外部不能访问(类似于内部类)
+       可以使用p命名空间来简化代码
+
+       <bean id="base" abstract="true">
+               <property name="name" value="jsm"/>
+           </bean>
+       <bean parent="base"></bean>
+       bean的继承
+
+11.数据库连接池
+    数据库连接池（Connection pooling）是程序启动时建立足够的数据库连接，
+             并将这些连接组成一个连接池，由程序动态地对池中的连接进行申请，使用，释放。
+    常见的有：c3p0，dbcp jdbc  Druid
+
+        <!--  配置数据库连接池 -->
+        <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+            <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+            <property name="url" value="jdbc:mysql://localhost:3306/testdb"/>
+            <property name="username" value="root"/>
+            <property name="password" value="435991368"/>
+            <property name="initialSize" value="4"/>
+        </bean>
+
+12.DI通过注解方式注入
+   <context:annotation-config/> DI注解解析器
+   对象类型：
+   @Autowired 可作用域字段或者set方法上
+   改注解的实现是先按照类型去找，如果找到同样类型的多个，再按照名字去找
+   @Resource找的方式和上面的相反，先按照名字取找，然后才根据类型
+   常量注入:
+   @Value
+
+13.IOC通过注解实现
+    IOC注解解析器:
+    <context:component-scan base-package="com.shuming.mycontrollers"></context:component-scan>
+    @Component(id名)如果不指定ID默认为类名首字母小写
+    @Scope来指定scope
+    @PostConstruct 标注init方法
+    @PreDestroy 标注destroy方法
+
+==============================================================================================================
+AOP
+1.静态代理
